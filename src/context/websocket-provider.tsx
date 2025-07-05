@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
-import { isProbablyJSON } from "../utils";
+import { capitalizeFirstLetter, isProbablyJSON } from "../utils";
 
 const CONNECTION_TIMEOUT = 60 * 60 * 1000; // 1 hour
 
@@ -234,7 +234,7 @@ export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const sendMessage = useCallback(
-    async (message: string): Promise<TChatPluginChatMessage> => {
+    async (message: TMessagePayload): Promise<TChatPluginChatMessage> => {
       const st = getConnection();
       if (!st || !st.isConnected) {
         toast.warning("Not connected");
@@ -243,13 +243,18 @@ export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
 
       const newMsg: TChatPluginChatMessage = {
         id: `${Date.now()}`,
-        content: message,
+        content:
+          typeof message === "string"
+            ? message
+            : capitalizeFirstLetter(message?.value),
         role: "user",
         created_at: Date.now(),
         chat_id: st.currentChatId,
       };
 
-      st.socket.send(message);
+      st.socket.send(
+        typeof message === "string" ? message : JSON.stringify(message)
+      );
 
       return newMsg;
     },

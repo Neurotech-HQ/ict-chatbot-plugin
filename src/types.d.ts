@@ -6,7 +6,14 @@ type TChatPluginChatMessage = {
   role: "agent" | "user" | "assistant" | "system";
   created_at: number | string;
   chat_id: string;
-  type?: "store_chat_id" | "rating_prompt" | "registration_required";
+  type?: "store_chat_id" | "show_rating_ui" | "registration_required";
+  buttons?: {
+    label: string;
+    action: string;
+    value: string;
+    resolution_id: string;
+  }[];
+  triggered_by?: string;
 };
 
 // Prefix all “interface” with IChatPlugin…
@@ -18,11 +25,19 @@ interface IChatPluginSocketConnectionState {
   isConnected: boolean;
   currentChatId: string;
 }
+type TMessagePayload =
+  | string
+  | {
+      type: "resolution_response";
+      action: string;
+      value: string;
+      resolution_id: string;
+    };
 
 interface TChatPluginWebSocketContextType {
   connect: (chatId?: string) => void;
   disconnect: () => void;
-  sendMessage: (message: string) => Promise<TChatPluginChatMessage>;
+  sendMessage: (message: TMessagePayload) => Promise<TChatPluginChatMessage>;
   subscribe: (cb: (msg: TChatPluginChatMessage) => void) => () => void;
   isConnected: () => boolean;
   getCurrentChatId: () => string | null;

@@ -53,7 +53,9 @@ export const Chatbox = () => {
     disconnect();
   };
 
-  const messageWithAgentId = messages?.find((message) => message?.agent_id);
+  const messageWithAgentId = messages?.find(
+    (message) => message?.type === "show_rating_ui"
+  );
 
   return (
     <DropdownMenu
@@ -177,7 +179,7 @@ export const Chatbox = () => {
               {isRegistered && isConnected() && !messageWithAgentId && (
                 <ReplyZone />
               )}
-              {messageWithAgentId?.agent_id && (
+              {messageWithAgentId && (
                 <RateAgent
                   message={messageWithAgentId}
                   leaveReview={leaveReview}

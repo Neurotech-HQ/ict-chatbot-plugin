@@ -4,6 +4,8 @@ import RegisterUser from "./register-user";
 import { BotIcon, Headset } from "lucide-react";
 import { useInView } from "react-intersection-observer";
 import { useWebSocket } from "@/context/websocket-provider";
+import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
 
 type TRole = "agent" | "user" | "assistant" | "system";
 
@@ -15,11 +17,13 @@ const MessageCard = ({
   prevMessageRole,
   nextMessageRole,
   id,
-}: TChatPluginChatMessage & {
+  buttons,
+}: // triggered_by,
+TChatPluginChatMessage & {
   prevMessageRole: TRole;
   nextMessageRole: TRole;
 }) => {
-  const { markAsRead, getUnreadMessages } = useWebSocket();
+  const { markAsRead, getUnreadMessages, sendMessage } = useWebSocket();
   const unreadMessages = getUnreadMessages();
 
   const { ref } = useInView({
@@ -67,6 +71,7 @@ const MessageCard = ({
 
     // System (override)
     "!rounded-3xl !rounded-bl-none": role === "system",
+    "!rounded-br-lg !rounded-bl-lg": buttons?.length,
   });
 
   const containerClass = clsx(
@@ -85,46 +90,71 @@ const MessageCard = ({
   );
 
   return (
-    <div className={containerClass} ref={ref} id={id}>
-      <div className={rowClass}>
-        {/* Avatar */}
-        {showAvatar ? (
-          <div className="w-6 h-6 min-w-6 flex items-end justify-center mb-1">
-            {avatar}
-          </div>
-        ) : (
-          role !== "user" && <div className="w-6 h-6 min-w-6" />
-        )}
-
-        {/* Message Bubble */}
-        <div
-          className={clsx(
-            bubbleBase,
-            bubbleColor,
-            borderFixes,
-            type === "registration_required" && "w-full"
-          )}
-        >
-          <p
-            dangerouslySetInnerHTML={{
-              __html: markdownWrap(wrapUrl(content)),
-            }}
-          />
-
-          {type === "registration_required" && (
-            <div className="bg-white dark:bg-sidebar p-5 rounded-xl mt-3">
-              <RegisterUser />
+    <div>
+      <div className={containerClass} ref={ref} id={id}>
+        <div className={rowClass}>
+          {/* Avatar */}
+          {showAvatar ? (
+            <div className="w-6 h-6 min-w-6 flex items-end justify-center mb-1">
+              {avatar}
             </div>
+          ) : (
+            role !== "user" && <div className="w-6 h-6 min-w-6" />
           )}
 
-          <div
-            className={clsx(
-              "flex justify-end mt-2 text-[10px] opacity-70",
-              isSent ? "text-gray-500 dark:text-gray-300" : "text-white"
-            )}
-          >
-            {/* @ts-ignore */}
-            {formatUTCDate(created_at)}
+          {/* Message Bubble */}
+          <div>
+            <div
+              className={clsx(
+                bubbleBase,
+                bubbleColor,
+                borderFixes,
+                type === "registration_required" && "w-full"
+              )}
+            >
+              <p
+                dangerouslySetInnerHTML={{
+                  __html: markdownWrap(wrapUrl(content)),
+                }}
+              />
+
+              {type === "registration_required" && (
+                <div className="bg-white dark:bg-sidebar p-5 rounded-xl mt-3">
+                  <RegisterUser />
+                </div>
+              )}
+
+              <div
+                className={clsx(
+                  "flex justify-end mt-2 text-[10px] opacity-70",
+                  isSent ? "text-gray-500 dark:text-gray-300" : "text-white"
+                )}
+              >
+                {/* @ts-ignore */}
+                {formatUTCDate(created_at)}
+              </div>
+              <div className="flex flex-col gap-1 mt-2 max-w-[calc(100%+24px)] w-[calc(100%+24px)] -ml-3 -mb-3 relative">
+                {buttons?.map((button) => (
+                  <Button
+                    size={"sm"}
+                    variant={"link"}
+                    onClick={() => {
+                      sendMessage({
+                        type: "resolution_response",
+                        value: button?.value,
+                        resolution_id: button?.resolution_id,
+                        action: button?.action,
+                      });
+                    }}
+                    className={cn(
+                      "text-blue-200 border-t border-neutral-200/15 w-full"
+                    )}
+                  >
+                    {button?.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

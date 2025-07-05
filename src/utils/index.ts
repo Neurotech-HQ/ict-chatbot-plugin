@@ -151,4 +151,15 @@ const formatUTCDate = (dateString: string): string => {
   return adjustedDate.format("hh:mm A");
 };
 
-export { isProbablyJSON, formatErrorMessage, wrapUrl, markdownWrap, formatUTCDate };
+const capitalizeFirstLetter = (str: string): string => {
+  return str;
+};
+
+export {
+  isProbablyJSON,
+  formatErrorMessage,
+  wrapUrl,
+  markdownWrap,
+  formatUTCDate,
+  capitalizeFirstLetter,
+};
